@@ -35,7 +35,8 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    setColor(topic: String, r: Int, g: Int, b: Int, a: Float): ColorRGB
+    setColorAmbient(topic: String, r: Int, g: Int, b: Int, a: Float): ColorRGB
+    setColorMain(r: Int, g: Int, b: Int, a: Float): ColorRGB
     login(email: String!, password: String!): User
     invalidateTokens: Boolean!
   }

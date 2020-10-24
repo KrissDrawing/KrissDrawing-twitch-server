@@ -2,6 +2,7 @@ import apolloServer from "apollo-server-express";
 import cookieParser from "cookie-parser";
 import express from "express";
 import jwt from "jsonwebtoken";
+import cors from "cors";
 // const { Yeelight } = require("yeelight-node");
 import { account } from "./account.js";
 import { createTokens } from "./auth.js";
@@ -22,7 +23,6 @@ const startServer = async () => {
   });
 
   const app = express();
-
   app.use(cookieParser());
 
   app.use((req, res, next) => {
@@ -59,8 +59,18 @@ const startServer = async () => {
 
     next();
   });
-  server.applyMiddleware({ app });
-
+  const corsOptions = {
+    origin: "http://localhost:8000/",
+    credentials: true,
+  };
+  // app.use(cors(corsOptions));
+  server.applyMiddleware({
+    app,
+    cors: {
+      origin: "http://localhost:8000",
+      credentials: true,
+    },
+  });
   app.listen({ port: 4000 }, () => console.log(`🚀 Server ready at http://localhost:4000/graphql`));
 };
 

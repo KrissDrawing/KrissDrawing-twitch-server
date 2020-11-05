@@ -3,11 +3,10 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-// const { Yeelight } = require("yeelight-node");
 import { account } from "./account.js";
 import { createTokens } from "./auth.js";
-import { resolvers } from "./resolvers.js";
-import { typeDefs } from "./typeDefs.js";
+import resolvers from "./resolvers.js";
+import typeDefs from "./typeDefs.js";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "./constants.js";
 
 const { ApolloServer } = apolloServer;

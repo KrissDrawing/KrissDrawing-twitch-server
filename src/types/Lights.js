@@ -3,8 +3,12 @@ const { gql } = apolloServer;
 import {
   pubsub,
   breakInterval,
+  startInterval,
   setAmbientLight,
   setYeelightLight,
+  setYeelightTemp,
+  daylightLoop,
+  colorFlow,
 } from "../utilities/lightControlls.js";
 
 export const typeDefs = gql`
@@ -26,7 +30,7 @@ export const typeDefs = gql`
 
   type Mutation {
     setColorAmbient(topic: String, r: Int, g: Int, b: Int, a: Float): ColorRGB
-    setColorMain(r: Int, g: Int, b: Int, a: Float): ColorRGB
+    setColorMain(r: Int, g: Int, b: Int, a: Float, colorTemp: Int): ColorRGB
     setScene(name: String): String
   }
   schema {
@@ -53,21 +57,28 @@ export const resolvers = {
     },
   },
   Mutation: {
-    setColorAmbient(_, { topic, r, g, b, a }, __) {
+    setColorAmbient(_, { topic, r = 0, g = 0, b = 0, a = 1 }, __) {
       breakInterval();
       setAmbientLight(topic, r, g, b, a);
       return { r, g, b, a };
     },
-    setColorMain(_, { r, g, b, a }, __) {
+    setColorMain(_, { r = 0, g = 0, b = 0, a = 1, colorTemp }, __) {
       breakInterval();
-      setYeelightLight(r, g, b, a);
+      if (colorTemp) {
+        setYeelightTemp(colorTemp, a);
+      } else {
+        setYeelightLight(r, g, b, a);
+      }
       return { r, g, b, a };
     },
     setScene(_, { topic, name }, __) {
-      if (name == "daylight") {
-        isIntervalWorking = true;
+      breakInterval();
+      if (name === "daylight") {
+        startInterval();
         daylightLoop(topic);
         return name;
+      } else {
+        colorFlow(name);
       }
       pubsub.publish(topic, name);
       return name;

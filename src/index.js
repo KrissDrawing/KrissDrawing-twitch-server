@@ -1,3 +1,4 @@
+import http from "http";
 import apolloServer from "apollo-server-express";
 import cookieParser from "cookie-parser";
 import express from "express";
@@ -70,7 +71,12 @@ const startServer = async () => {
       credentials: true,
     },
   });
-  app.listen({ port: 4000 }, () => console.log(`🚀 Server ready at http://localhost:4000/graphql`));
+  const httpServer = http.createServer(app);
+  server.installSubscriptionHandlers(httpServer);
+
+  httpServer.listen({ port: 3000 }, () =>
+    console.log(`🚀 Server ready at http://localhost:3000/graphql`)
+  );
 };
 
 startServer();

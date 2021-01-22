@@ -59,15 +59,10 @@ const startServer = async () => {
 
     next();
   });
-  const corsOptions = {
-    origin: "http://localhost:8000/",
-    credentials: true,
-  };
-  // app.use(cors(corsOptions));
   server.applyMiddleware({
     app,
     cors: {
-      origin: "http://localhost:8000",
+      // origin: "http://localhost:8000",
       credentials: true,
     },
   });

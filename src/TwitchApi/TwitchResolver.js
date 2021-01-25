@@ -1,11 +1,18 @@
 import apolloServer from "apollo-server-express";
-import { pubsub } from "./client.js";
-import { withFilter } from "apollo-server";
+import { pubsub } from "./EventSubTwitch.js";
+import { pubsubPoints } from "./PubSubTwitch.js";
 const { gql } = apolloServer;
 
 export const typeDefs = gql`
+  type pointsObject {
+    rewardPrompt: String!
+    userDisplayName: String!
+    rewardCost: String!
+  }
+
   type Subscription {
     subscribeFollow(topic: String!): String
+    subscribePoints(topic: String!): pointsObject
   }
 
   schema {
@@ -20,6 +27,12 @@ export const resolvers = {
         return payload;
       },
       subscribe: (_, args) => pubsub.asyncIterator(args.topic),
+    },
+    subscribePoints: {
+      resolve: (payload) => {
+        return payload;
+      },
+      subscribe: (_, args) => pubsubPoints.asyncIterator(args.topic),
     },
   },
 };

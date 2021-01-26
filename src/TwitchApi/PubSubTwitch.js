@@ -2,6 +2,7 @@ import { ApiClient } from "twitch";
 import { PubSubClient } from "twitch-pubsub-client";
 import { apiClientChannelPoints } from "./client.js";
 import { PubSub } from "apollo-server";
+import { setYeelightLight } from "../utilities/lightControlls.js";
 export const pubsubPoints = new PubSub();
 
 const pubSubClient = new PubSubClient();
@@ -13,6 +14,27 @@ export const listener = await pubSubClient.onRedemption(userId, (message) => {
     userDisplayName: message.userDisplayName,
     rewardCost: message.rewardCost,
   };
+
+  if (pointsObject.rewardPrompt.includes("zmieni kolor na")) {
+    const rewardedColor = pointsObject.rewardPrompt.substring(
+      pointsObject.rewardPrompt.lastIndexOf(" ") + 1
+    );
+    let switchColor;
+
+    switch (rewardedColor) {
+      case "czerwony":
+        switchColor = { r: 255, g: 0, b: 0, a: 1 };
+        break;
+      case "zielony":
+        switchColor = { r: 0, g: 255, b: 0, a: 1 };
+        break;
+      case "niebieski":
+        switchColor = { r: 0, g: 0, b: 255, a: 1 };
+        break;
+    }
+    setYeelightLight(switchColor.r, switchColor.g, switchColor.b, switchColor.a);
+  }
+
   pubsubPoints.publish("points", pointsObject);
   console.log(`${message.rewardPrompt} --- ${message.userDisplayName} --- ${message.rewardCost}`);
 });

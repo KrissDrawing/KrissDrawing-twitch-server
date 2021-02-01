@@ -10,8 +10,8 @@ import {
   daylightLoop,
   colorFlow,
 } from "../utilities/lightControlls.js";
-import { followSubscription } from "../TwitchApi/EventSubTwitch.js";
 import { listener } from "../TwitchApi/PubSubTwitch.js";
+import { commandsListener } from "../TwitchBot/TwitchBot.js";
 
 export const typeDefs = gql`
   type ColorRGB {

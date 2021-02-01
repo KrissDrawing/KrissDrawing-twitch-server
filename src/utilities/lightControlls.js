@@ -66,6 +66,7 @@ const RGBtoDecimal = (r, g, b) => {
 
 const calmTime = 15000;
 const energyTime = 15000;
+const twitchFollowTime = 1000;
 const colorFlowScenes = {
   calm: [
     [calmTime, 1, RGBtoDecimal(20, 255, 50), 100],
@@ -79,11 +80,17 @@ const colorFlowScenes = {
     [energyTime, 1, RGBtoDecimal(40, 20, 255), 100],
     [energyTime, 1, RGBtoDecimal(50, 20, 255), 90],
   ],
+  twitchFollow: [
+    [twitchFollowTime, 1, RGBtoDecimal(255, 0, 0), 100],
+    [twitchFollowTime, 1, RGBtoDecimal(0, 255, 0), 100],
+    [twitchFollowTime, 1, RGBtoDecimal(0, 0, 255), 100],
+    [twitchFollowTime, 1, RGBtoDecimal(255, 255, 255), 100],
+  ],
 };
 
-export const colorFlow = (name) => {
+export const colorFlow = (name, repeat) => {
   mainLights.forEach((light) => {
-    light.start_cf(0, 0, colorFlowScenes[name]);
+    light.start_cf(repeat, 0, colorFlowScenes[name]);
   });
 };
 

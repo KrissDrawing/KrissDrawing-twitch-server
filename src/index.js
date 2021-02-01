@@ -9,6 +9,7 @@ import { createTokens } from "./auth.js";
 import resolvers from "./resolvers.js";
 import typeDefs from "./typeDefs.js";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "./constants.js";
+// import { followSubscription } from "./TwitchApi/EventSubTwitch.js";
 
 const { ApolloServer } = apolloServer;
 const { verify } = jwt;

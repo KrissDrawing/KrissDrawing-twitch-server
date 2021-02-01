@@ -1,14 +1,13 @@
-import { ApiClient } from "twitch";
 import { PubSubClient } from "twitch-pubsub-client";
 import { apiClientChannelPoints } from "./client.js";
 import { PubSub } from "apollo-server";
-import { setYeelightLight } from "../utilities/lightControlls.js";
+import { setYeelightLight, colorFlow } from "../utilities/lightControlls.js";
 export const pubsubPoints = new PubSub();
 
 const pubSubClient = new PubSubClient();
 const userId = await pubSubClient.registerUserListener(apiClientChannelPoints);
 
-export const listener = await pubSubClient.onRedemption(userId, (message) => {
+export const listener = await pubSubClient.onRedemption(userId, async (message) => {
   const pointsObject = {
     rewardPrompt: message.rewardPrompt,
     userDisplayName: message.userDisplayName,
@@ -33,6 +32,8 @@ export const listener = await pubSubClient.onRedemption(userId, (message) => {
         break;
     }
     setYeelightLight(switchColor.r, switchColor.g, switchColor.b, switchColor.a);
+  } else {
+    colorFlow("twitchFollow", 4);
   }
 
   pubsubPoints.publish("points", pointsObject);

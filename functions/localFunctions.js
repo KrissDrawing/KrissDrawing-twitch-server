@@ -58,3 +58,12 @@ export const loadLastRedeems = async () => {
   const data = await queueRef.doc("queue").get();
   return data.data().rewards;
 };
+
+export const saveLastFollow = async (follow) => {
+  await queueRef.doc("follow").set({ follow });
+};
+
+export const loadLastFollow = async () => {
+  const data = await queueRef.doc("follow").get();
+  return data.data().follow;
+};

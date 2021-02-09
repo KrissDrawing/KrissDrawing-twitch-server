@@ -6,6 +6,7 @@ import { throttle } from "throttle-debounce";
 import { colorFlow } from "../utilities/lightControlls.js";
 import { chatClient } from "../TwitchApi/client.js";
 import { getCuriosity, getCatFact, getRandomFact } from "../utilities/extendedApi.js";
+import { saveLastFollow } from "../../functions/localFunctions.js";
 
 export const pubsub = new PubSub();
 
@@ -21,8 +22,8 @@ const listener = new EventSubListener(apiClient, new NgrokAdapter());
 
 await listener.listen();
 
-// const userId = "48006194"; //my ID
-const userId = "12826"; // twitch ID
+const userId = "48006194"; //my ID
+// const userId = "12826"; // twitch ID
 
 const subscriptions = await apiClient.helix.eventSub.getSubscriptions();
 
@@ -46,7 +47,7 @@ export const followSubscription = await listener.subscribeToChannelFollowEvents(
     console.log(`${e.userDisplayName} just followed!`);
 
     botCommand(e.userDisplayName);
-
+    saveLastFollow(e.userDisplayName);
     colorFlow("twitchFollow", 8);
 
     pubsub.publish("followers", e.userDisplayName);

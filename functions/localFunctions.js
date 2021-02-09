@@ -67,3 +67,14 @@ export const loadLastFollow = async () => {
   const data = await queueRef.doc("follow").get();
   return data.data().follow;
 };
+
+const tokensRef = db.collection("tokens");
+
+export const saveTokens = async (tokens) => {
+  await tokensRef.doc("appToken").set(tokens);
+};
+
+export const loadTokens = async () => {
+  const data = await tokensRef.doc("appToken").get();
+  return data.data();
+};

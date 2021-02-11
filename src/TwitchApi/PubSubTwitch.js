@@ -2,6 +2,7 @@ import { PubSubClient } from "twitch-pubsub-client";
 import { apiClientChannelPoints } from "./client.js";
 import { PubSub } from "apollo-server";
 import { setYeelightLight, colorFlow } from "../utilities/lightControlls.js";
+import { handleReward } from "../../functions/localFunctions.js";
 export const pubsubPoints = new PubSub();
 
 const pubSubClient = new PubSubClient();
@@ -12,6 +13,7 @@ export const listener = await pubSubClient.onRedemption(userId, async (message) 
     rewardPrompt: message.rewardPrompt,
     userDisplayName: message.userDisplayName,
     rewardCost: message.rewardCost,
+    userId: message.userId,
   };
 
   if (pointsObject.rewardPrompt.includes("zmieni kolor na")) {
@@ -35,6 +37,8 @@ export const listener = await pubSubClient.onRedemption(userId, async (message) 
   } else {
     colorFlow("twitchFollow", 4);
   }
+
+  await handleReward(pointsObject);
 
   pubsubPoints.publish("points", pointsObject);
   console.log(`${message.rewardPrompt} --- ${message.userDisplayName} --- ${message.rewardCost}`);

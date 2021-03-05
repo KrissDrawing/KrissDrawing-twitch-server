@@ -1,6 +1,7 @@
 import apolloServer from "apollo-server-express";
 import { pubsub } from "./EventSubTwitch.js";
 import { pubsubPoints } from "./PubSubTwitch.js";
+import { pubsubChat } from "../TwitchBot/TwitchBot.js";
 import {
   loadLastRedeems,
   saveLastRedeems,
@@ -28,6 +29,7 @@ export const typeDefs = gql`
   }
 
   type Subscription {
+    subscribeAlert(topic: String!): String
     subscribeFollow(topic: String!): String
     subscribePoints(topic: String!): pointsObject
   }
@@ -58,6 +60,12 @@ export const resolvers = {
     },
   },
   Subscription: {
+    subscribeAlert: {
+      resolve: (payload) => {
+        return payload;
+      },
+      subscribe: (_, args) => pubsubChat.asyncIterator(args.topic),
+    },
     subscribeFollow: {
       resolve: (payload) => {
         return payload;

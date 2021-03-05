@@ -22,7 +22,7 @@ const updateUser = (dbUser, rewardData) => {
   }
   if (dbUser === null) {
     finalUser = {
-      display_name: rewardData.userDisplayName,
+      display_name: rewardData.userDisplayName.toLowerCase(),
       points_spent: rewardData.rewardCost,
       rewards_count: 1,
     };
@@ -30,7 +30,7 @@ const updateUser = (dbUser, rewardData) => {
   if (dbUser) {
     console.log(dbUser);
     finalUser = {
-      display_name: rewardData.userDisplayName,
+      display_name: rewardData.userDisplayName.toLowerCase(),
       points_spent: dbUser.points_spent + rewardData.rewardCost,
       rewards_count: dbUser.rewards_count + 1,
     };
@@ -46,6 +46,15 @@ export const handleReward = async (rewardData) => {
   const dbUser = await readUser(rewardData.userId);
   const finalUser = updateUser(dbUser, rewardData);
   setUser(rewardData.userId, finalUser);
+};
+
+export const ReadSpentPoints = async (user) => {
+  const snapshot = await userRef.where("display_name", "==", user.toLowerCase()).get();
+
+  if (snapshot.empty) {
+    return null;
+  }
+  return snapshot.docs[0].data();
 };
 
 const queueRef = db.collection("queue");

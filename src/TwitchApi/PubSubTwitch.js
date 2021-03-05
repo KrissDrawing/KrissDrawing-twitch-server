@@ -3,6 +3,7 @@ import { apiClientChannelPoints } from "./client.js";
 import { PubSub } from "apollo-server";
 import { setYeelightLight, colorFlow } from "../utilities/lightControlls.js";
 import { handleReward } from "../../functions/localFunctions.js";
+
 export const pubsubPoints = new PubSub();
 
 const pubSubClient = new PubSubClient();

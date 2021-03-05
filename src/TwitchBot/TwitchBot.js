@@ -1,9 +1,12 @@
 import axios from "axios";
 import { throttle } from "throttle-debounce";
-import { chatClient, apiClient } from "../TwitchApi/client.js";
+import { PubSub } from "apollo-server";
+import { chatClient } from "../TwitchApi/client.js";
+import { ReadSpentPoints } from "../../functions/localFunctions.js";
 
 await chatClient.connect();
 
+export const pubsubChat = new PubSub();
 let rank;
 
 const fetchRank = async () => {
@@ -29,18 +32,22 @@ const fetchRank = async () => {
   });
 };
 
+//Chat commands
 const rankCommand = throttle(30000, true, async (channel) => {
   await fetchRank();
   chatClient.say(channel, rank[0]);
   chatClient.say(channel, rank[1]);
   chatClient.say(channel, rank[2]);
 });
-
-const socialsCommand = throttle(30000, true, (channel) => {
+const followCommand = (channel) => {
+  chatClient.say(channel, "Fajnie, że jesteś! Zostaw follow, aby być na bieżąco ze streamkami");
+};
+const instagramCommand = (channel) => {
   chatClient.say(channel, "insta: https://www.instagram.com/krissdrawing/");
+};
+const youtubeCommand = (channel) => {
   chatClient.say(channel, "YT: https://www.youtube.com/c/6KRX (Cii... coś dodam kiedyś");
-});
-
+};
 const discordCommand = throttle(30000, true, (channel) => {
   chatClient.say(
     channel,
@@ -48,21 +55,56 @@ const discordCommand = throttle(30000, true, (channel) => {
   );
 });
 
+const socialsCommand = throttle(30000, true, (channel) => {
+  instagramCommand(channel);
+  youtubeCommand(channel);
+});
+
+//discord alert timer;
+setInterval(() => {
+  discordCommand("krissdrawing");
+}, 860000);
+
+//Follow alert timer
+setInterval(() => {
+  followCommand("krissdrawing");
+  pubsubChat.publish("followAlert", Date.now());
+}, 900000);
+
+//Instagram alert timer
+setInterval(() => {
+  instagramCommand("krissdrawing");
+  pubsubChat.publish("instagramAlert", Date.now());
+}, 1000000);
+
 export const commandsListener = chatClient.onMessage(async (channel, user, message, msg) => {
-  if (["!rank", "!rang", "!ranga"].some((command) => command === message)) {
+  if (["!rank", "!rang", "!ranga", "!ranks", "!rangs"].some((command) => command === message)) {
     rankCommand(channel);
   }
   if (
-    ["!socials", "!sociale", "!insta", "!fb", "!facebook", "!instagram", "!twitter", "!insta"].some(
+    ["!socials", "!sociale", "!insta", "!fb", "!facebook", "!instagram", "!twitter"].some(
       (command) => command === message
     )
   ) {
     socialsCommand(channel);
   }
-  if (["!discord", "!dc", "!ds", "!dsc", "diskord"].some((command) => command === message)) {
+  if (["!discord", "!dc", "!ds", "!dsc", "!diskord"].some((command) => command === message)) {
     discordCommand(channel);
   }
-});
+  if ("!points" === message || "!points" === message.split(" ")[0]) {
+    let checkUser = user;
 
-// later, when you don't need this command anymore:
-// chatClient.removeListener(followAgeListener);
+    if (message?.split(" ")?.[1]?.trim()) {
+      checkUser = message.split(" ")[1].trim();
+    }
+    let rewardObject = await ReadSpentPoints(checkUser);
+    if (!rewardObject) {
+      chatClient.say(channel, "KEKW Typ nawet nie odebrał nic LUL");
+    } else {
+      chatClient.say(
+        channel,
+        `${checkUser} odebrał nagrody ${rewardObject.rewards_count} razy, wydając łącznie ${rewardObject.points_spent} punktów KEKW`
+      );
+    }
+  }
+});

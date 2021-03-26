@@ -2,7 +2,7 @@ import { DirectConnectionAdapter, EventSubListener } from "twitch-eventsub";
 import { NgrokAdapter } from "twitch-eventsub-ngrok";
 import { apiClient } from "./client.js";
 import { PubSub } from "apollo-server";
-import { throttle } from "throttle-debounce";
+import { throttle, debounce } from "throttle-debounce";
 import { colorFlow } from "../utilities/lightControlls.js";
 import { chatClient } from "../TwitchApi/client.js";
 import { getCuriosity, getCatFact, getRandomFact } from "../utilities/extendedApi.js";
@@ -35,11 +35,11 @@ await Promise.all(
 
 const followReplies = [getCuriosity, getCatFact, getRandomFact];
 
-const botCommand = async (user) => {
+const botCommand = debounce(1000, async (user) => {
   const randomNumber = Math.floor(Math.random() * followReplies.length);
   const reply = await followReplies[randomNumber]();
   chatClient.say("#krissdrawing", `@${user}: ${reply}`);
-};
+});
 
 export const followSubscription = await listener.subscribeToChannelFollowEvents(
   userId,

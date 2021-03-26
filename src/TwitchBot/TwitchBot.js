@@ -56,6 +56,7 @@ const rankCommand = throttle(30000, true, async (channel) => {
   chatClient.say(channel, rank[1]);
   chatClient.say(channel, rank[2]);
 });
+
 const followCommand = (channel) => {
   chatClient.say(channel, "Fajnie, że jesteś! Zostaw follow, aby być na bieżąco ze streamkami");
 };

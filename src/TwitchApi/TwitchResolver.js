@@ -7,15 +7,22 @@ import {
   saveLastRedeems,
   loadLastFollow,
 } from "../../functions/localFunctions.js";
+import { apiClientChannelPoints } from "./client.js";
 import { getInstagramLink } from "../InstagramApi/InstagramApi.js";
 // const { loadLastRedeems } = firebaseFunctions;
 const { gql } = apolloServer;
 
 export const typeDefs = gql`
+  type SubObject {
+    name: String!
+    count: Int!
+  }
+
   type Query {
     queue: String!
     follow: String!
     instagramPhoto: String!
+    lastSub: SubObject!
   }
 
   type Mutation {
@@ -57,6 +64,12 @@ export const resolvers = {
     },
     instagramPhoto: async () => {
       return await getInstagramLink();
+    },
+    lastSub: async () => {
+      const data = await apiClientChannelPoints.helix.subscriptions.getSubscriptions(
+        process.env.TWITCH_CHANNEL_ID
+      );
+      return { name: data?.data?.[0]?.userDisplayName, count: data?.data?.length };
     },
   },
   Subscription: {

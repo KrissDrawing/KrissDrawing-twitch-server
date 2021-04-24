@@ -15,8 +15,12 @@ export const listener = await pubSubClient.onRedemption(userId, async (message) 
     userDisplayName: message.userDisplayName,
     rewardCost: message.rewardCost,
     userId: message.userId,
+    id: message.id,
   };
 
+  if (pointsObject.rewardPrompt === "przywitaj się") {
+    pubsubPoints.publish("helloTrigger", true);
+  }
   if (pointsObject.rewardPrompt.includes("zmieni kolor na")) {
     const rewardedColor = pointsObject.rewardPrompt.substring(
       pointsObject.rewardPrompt.lastIndexOf(" ") + 1

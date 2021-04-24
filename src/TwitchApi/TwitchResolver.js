@@ -33,12 +33,15 @@ export const typeDefs = gql`
     rewardPrompt: String!
     userDisplayName: String!
     rewardCost: String!
+    userId: String!
+    id: String!
   }
 
   type Subscription {
     subscribeAlert(topic: String!): String
     subscribeFollow(topic: String!): String
     subscribePoints(topic: String!): pointsObject
+    subscribeHelloReward(topic: String!): Boolean
   }
 
   schema {
@@ -69,7 +72,13 @@ export const resolvers = {
       const data = await apiClientChannelPoints.helix.subscriptions.getSubscriptions(
         process.env.TWITCH_CHANNEL_ID
       );
-      return { name: data?.data?.[0]?.userDisplayName, count: data?.data?.length };
+      return {
+        name:
+          data?.data?.length > 1
+            ? data?.data?.[data?.data?.length - 2].userDisplayName
+            : data?.data?.[0]?.userDisplayName,
+        count: data?.data?.length,
+      };
     },
   },
   Subscription: {
@@ -86,6 +95,12 @@ export const resolvers = {
       subscribe: (_, args) => pubsub.asyncIterator(args.topic),
     },
     subscribePoints: {
+      resolve: (payload) => {
+        return payload;
+      },
+      subscribe: (_, args) => pubsubPoints.asyncIterator(args.topic),
+    },
+    subscribeHelloReward: {
       resolve: (payload) => {
         return payload;
       },

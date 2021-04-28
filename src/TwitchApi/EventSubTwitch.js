@@ -41,12 +41,16 @@ const botCommand = debounce(1000, async (user) => {
   chatClient.say("#krissdrawing", `@${user}: ${reply}`);
 });
 
+const botGreeting = debounce(1000, async (user) => {
+  chatClient.say("#krissdrawing", `@${user}, Witaj na streamku! Dzięki za follow krissd1GamingCat`);
+});
+
 export const followSubscription = await listener.subscribeToChannelFollowEvents(
   userId,
   async (e) => {
     console.log(`${e.userDisplayName} just followed!`);
-
-    botCommand(e.userDisplayName);
+    botGreeting(e.userDisplayName);
+    // botCommand(e.userDisplayName);
     saveLastFollow(e.userDisplayName);
     colorFlow("twitchFollow", 8);
 

@@ -18,9 +18,14 @@ export const typeDefs = gql`
     count: Int!
   }
 
+  type FollowObject {
+    name: String!
+    count: Int!
+  }
+
   type Query {
     queue: String!
-    follow: String!
+    follow: FollowObject!
     instagramPhoto: String!
     lastSub: SubObject!
   }
@@ -39,7 +44,7 @@ export const typeDefs = gql`
 
   type Subscription {
     subscribeAlert(topic: String!): String
-    subscribeFollow(topic: String!): String
+    subscribeFollow(topic: String!): FollowObject
     subscribePoints(topic: String!): pointsObject
     subscribeHelloReward(topic: String!): Boolean
   }
@@ -63,6 +68,7 @@ export const resolvers = {
       return await loadLastRedeems();
     },
     follow: async () => {
+      console.log(await loadLastFollow());
       return await loadLastFollow();
     },
     instagramPhoto: async () => {

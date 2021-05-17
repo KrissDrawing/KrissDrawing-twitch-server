@@ -2,7 +2,7 @@ import { DirectConnectionAdapter, EventSubListener } from "twitch-eventsub";
 import { NgrokAdapter } from "twitch-eventsub-ngrok";
 import { apiClient } from "./client.js";
 import { PubSub } from "apollo-server";
-import { throttle, debounce } from "throttle-debounce";
+import { debounce } from "throttle-debounce";
 import { colorFlow } from "../utilities/lightControlls.js";
 import { chatClient } from "../TwitchApi/client.js";
 import { getCuriosity, getCatFact, getRandomFact } from "../utilities/extendedApi.js";
@@ -51,9 +51,12 @@ export const followSubscription = await listener.subscribeToChannelFollowEvents(
     console.log(`${e.userDisplayName} just followed!`);
     botGreeting(e.userDisplayName);
     // botCommand(e.userDisplayName);
-    saveLastFollow(e.userDisplayName);
+    const followData = await apiClient.helix.users.getFollows({ followedUser: "48006194" });
+    const followerObject = { name: e.userDisplayName, count: followData.total };
+
+    saveLastFollow(followerObject);
     colorFlow("twitchFollow", 8);
 
-    pubsub.publish("followers", e.userDisplayName);
+    pubsub.publish("followers", followerObject);
   }
 );

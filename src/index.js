@@ -16,6 +16,8 @@ const {verify} = jwt;
 
 const startServer = async () => {
   const server = new ApolloServer({
+    playground: true,
+    introspection: true,
     typeDefs,
     resolvers,
     context: ({req, res}) => {

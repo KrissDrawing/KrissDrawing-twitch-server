@@ -8,10 +8,10 @@ const { Yeelight } = yeelightNode;
 const { MQTTPubSub } = mqttSub;
 const { connect } = mqtt;
 
-const yeelight1 = new Yeelight({ ip: "192.168.1.35", port: 55443 });
-const yeelight2 = new Yeelight({ ip: "192.168.1.36", port: 55443 });
-const yeelight3 = new Yeelight({ ip: "192.168.1.37", port: 55443 });
-const mainLights = [yeelight1, yeelight2, yeelight3];
+const yeelight1 = new Yeelight({ ip: "192.168.1.20", port: 55443 });
+const yeelight2 = new Yeelight({ ip: "192.168.1.21", port: 55443 });
+// const yeelight3 = new Yeelight({ ip: "192.168.1.35", port: 55443 });
+const mainLights = [yeelight1, yeelight2];
 
 export const client = connect("mqtt://192.168.1.44", {
   reconnectPeriod: 1000,

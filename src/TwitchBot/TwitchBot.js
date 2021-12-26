@@ -2,7 +2,12 @@ import axios from "axios";
 import { throttle } from "throttle-debounce";
 import { PubSub } from "apollo-server";
 import { chatClient } from "../TwitchApi/client.js";
-import { ReadSpentPoints } from "../../functions/localFunctions.js";
+import {
+  addToPlayQueue,
+  clearPlayQueue,
+  nextPlayQueue,
+  ReadSpentPoints,
+} from "../../functions/localFunctions.js";
 import { hexToRgb, setYeelightLight } from "../utilities/lightControlls.js";
 
 await chatClient.connect();
@@ -118,6 +123,32 @@ export const commandsListener = chatClient.onMessage(async (channel, user, messa
   if ("!led" === message.toLowerCase().split(" ")[0] && message.toLowerCase().split(" ")[1]) {
     lightControll(message, channel);
   }
+
+  if ("!gram" === message.toLowerCase()) {
+    const {message, queue} = await addToPlayQueue(user)
+    chatClient.say(channel, `${user} ${message}`);
+    pubsubChat.publish("queue", {queue});
+    console.log(user);
+  }
+  if ("!clear" === message.toLowerCase() && user === "krissdrawing") {
+    await clearPlayQueue();
+    pubsubChat.publish("queue", {queue: []});
+    chatClient.say(channel, "Wyczyszczono kolejeczke");
+  }
+  if ("!next" === message.toLowerCase() && user === "krissdrawing") {
+    const {message, queue} = await nextPlayQueue();
+    chatClient.say(channel, message);
+    pubsubChat.publish("queue", {queue});
+  }
+  // if (message.toLowerCase().includes('!prev')) {
+  //   const amount = +message.split(' ')[1];
+  //
+  //   if(!isNaN(amount)) {
+  //     await prevPlayQueue(amount)
+  //   } else {
+  //     await prevPlayQueue(1);
+  //   }
+  // }
 });
 
 //discord alert timer;

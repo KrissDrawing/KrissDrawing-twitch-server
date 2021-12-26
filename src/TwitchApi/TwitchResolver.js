@@ -5,7 +5,7 @@ import { pubsubChat } from "../TwitchBot/TwitchBot.js";
 import {
   loadLastRedeems,
   saveLastRedeems,
-  loadLastFollow,
+  loadLastFollow, getPlayQueue,
 } from "../../functions/localFunctions.js";
 import { apiClientChannelPoints } from "./client.js";
 import { getInstagramLink } from "../InstagramApi/InstagramApi.js";
@@ -22,12 +22,23 @@ export const typeDefs = gql`
     name: String!
     count: Int!
   }
+  
+  type QueuePlayer {
+    name: String!
+    costume: Int!
+  }
+  
+  type QueueObject {
+    queue: [QueuePlayer]!
+  }
+  
 
   type Query {
     queue: String!
     follow: FollowObject!
     instagramPhoto: String!
     lastSub: SubObject!
+    playQueue: [QueuePlayer]!
   }
 
   type Mutation {
@@ -46,6 +57,7 @@ export const typeDefs = gql`
     subscribeAlert(topic: String!): String
     subscribeFollow(topic: String!): FollowObject
     subscribePoints(topic: String!): pointsObject
+    subscribeQueue(topic: String!): QueueObject
     subscribeHelloReward(topic: String!): Boolean
   }
 
@@ -66,6 +78,9 @@ export const resolvers = {
   Query: {
     queue: async () => {
       return await loadLastRedeems();
+    },
+    playQueue: async () => {
+      return await getPlayQueue();
     },
     follow: async () => {
       console.log(await loadLastFollow());
@@ -105,6 +120,12 @@ export const resolvers = {
         return payload;
       },
       subscribe: (_, args) => pubsubPoints.asyncIterator(args.topic),
+    },
+    subscribeQueue: {
+      resolve: (payload) => {
+        return payload;
+      },
+      subscribe: (_, args) => pubsubChat.asyncIterator(args.topic),
     },
     subscribeHelloReward: {
       resolve: (payload) => {

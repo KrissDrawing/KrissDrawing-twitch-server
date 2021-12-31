@@ -26,6 +26,7 @@ export const typeDefs = gql`
   type QueuePlayer {
     name: String!
     costume: Int!
+    startPlaying: String
   }
   
   type QueueObject {

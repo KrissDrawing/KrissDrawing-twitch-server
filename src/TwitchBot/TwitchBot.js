@@ -1,14 +1,14 @@
 import axios from "axios";
-import { throttle } from "throttle-debounce";
-import { PubSub } from "apollo-server";
-import { chatClient } from "../TwitchApi/client.js";
+import {throttle} from "throttle-debounce";
+import {PubSub} from "apollo-server";
+import {chatClient} from "../TwitchApi/client.js";
 import {
   addToPlayQueue,
   clearPlayQueue,
   nextPlayQueue,
-  ReadSpentPoints,
+  ReadSpentPoints, removeFromPlayQueue,
 } from "../../functions/localFunctions.js";
-import { hexToRgb, setYeelightLight } from "../utilities/lightControlls.js";
+import {hexToRgb, setYeelightLight} from "../utilities/lightControlls.js";
 
 await chatClient.connect();
 
@@ -18,7 +18,7 @@ let rank;
 const fetchRank = async () => {
   try {
     rank = await axios.get(
-      "https://api.yannismate.de/rank/steam/76561198045986346?playlists=ranked_3v3,ranked_2v2,ranked_1v1"
+      "https://api.yannismate.de/rank/steam/76561198045986346?playlists=ranked_3v3,ranked_2v2,ranked_1v1",
     );
   } catch (err) {
     console.log(error);
@@ -41,7 +41,7 @@ const fetchRank = async () => {
 const lightMessage = throttle(15000, true, async (channel) => {
   chatClient.say(
     channel,
-    `Aby zmienić kolor piszemy "!led " + kod koloru HEX, np. z tej strony https://htmlcolorcodes.com/color-picker/ przykładowo "!led #ff0000"`
+    `Aby zmienić kolor piszemy "!led " + kod koloru HEX, np. z tej strony https://htmlcolorcodes.com/color-picker/ przykładowo "!led #ff0000"`,
   );
 });
 
@@ -74,13 +74,15 @@ const youtubeCommand = (channel) => {
 const discordCommand = throttle(30000, true, (channel) => {
   chatClient.say(
     channel,
-    "Zapraszam na serwerek, można pogadać, poumawiać się na gierki, itp. https://discord.gg/uzr4e7sPxT"
+    "Zapraszam na serwerek, można pogadać, poumawiać się na gierki, itp. https://discord.gg/uzr4e7sPxT",
   );
 });
 const socialsCommand = throttle(30000, true, (channel) => {
   instagramCommand(channel);
   youtubeCommand(channel);
 });
+
+let isQueueActive = false;
 
 export const commandsListener = chatClient.onMessage(async (channel, user, message, msg) => {
   if (["!rank", "!rang", "!ranga", "!ranks", "!rangs"].some((command) => command === message)) {
@@ -89,7 +91,7 @@ export const commandsListener = chatClient.onMessage(async (channel, user, messa
 
   if (
     ["!socials", "!sociale", "!insta", "!fb", "!facebook", "!instagram", "!twitter"].some(
-      (command) => command === message
+      (command) => command === message,
     )
   ) {
     socialsCommand(channel);
@@ -111,7 +113,7 @@ export const commandsListener = chatClient.onMessage(async (channel, user, messa
     } else {
       chatClient.say(
         channel,
-        `${checkUser} odebrał nagrody ${rewardObject.rewards_count} razy, wydając łącznie ${rewardObject.points_spent} punktów KEKW`
+        `${checkUser} odebrał nagrody ${rewardObject.rewards_count} razy, wydając łącznie ${rewardObject.points_spent} punktów KEKW`,
       );
     }
   }
@@ -124,11 +126,31 @@ export const commandsListener = chatClient.onMessage(async (channel, user, messa
     lightControll(message, channel);
   }
 
+  ///
+  /// === QUEUE RELATED ===
+  ///
+  if ("!start" === message.toLowerCase()) {
+    await clearPlayQueue();
+    isQueueActive = true;
+    chatClient.say(channel, "start kolejki, cyk PogChamp");
+  }
+  if ("!cancel" === message.toLowerCase() && user === "krissdrawing") {
+    isQueueActive = false;
+    chatClient.say(channel, "kolejka zamknięta!");
+  }
   if ("!gram" === message.toLowerCase()) {
-    const {message, queue} = await addToPlayQueue(user)
-    chatClient.say(channel, `${user} ${message}`);
-    pubsubChat.publish("queue", {queue});
-    console.log(user);
+    if (isQueueActive) {
+      const {message, queue} = await addToPlayQueue(user)
+      chatClient.say(channel, `${user} ${message}`);
+      pubsubChat.publish("queue", {queue});
+    } else {
+      chatClient.say(channel, "Kolejka zamknięta NotLikeThis spróbuj next time ");
+    }
+  }
+  if ("!niegram" === message.toLowerCase()) {
+      const {message, queue} = await removeFromPlayQueue(user)
+      chatClient.say(channel, `${user} ${message}`);
+      pubsubChat.publish("queue", {queue});
   }
   if ("!clear" === message.toLowerCase() && user === "krissdrawing") {
     await clearPlayQueue();
@@ -136,10 +158,14 @@ export const commandsListener = chatClient.onMessage(async (channel, user, messa
     chatClient.say(channel, "Wyczyszczono kolejeczke");
   }
   if ("!next" === message.toLowerCase() && user === "krissdrawing") {
-    const {message, queue} = await nextPlayQueue();
+    const {message, queue} = await nextPlayQueue(isQueueActive);
     chatClient.say(channel, message);
     pubsubChat.publish("queue", {queue});
   }
+  if ("!kolejka" === message.toLowerCase()) {
+    chatClient.say(channel, "https://twitchlayout.netlify.app/queue");
+  }
+
   // if (message.toLowerCase().includes('!prev')) {
   //   const amount = +message.split(' ')[1];
   //

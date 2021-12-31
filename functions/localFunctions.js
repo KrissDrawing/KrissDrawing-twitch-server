@@ -92,42 +92,64 @@ export const loadTokens = async () => {
 //-----
 //QUEUE
 //-----
+export const removeFromPlayQueue = async (userName) => {
+  const data = await queueRef.doc("playQueue").get();
+  const docData = data.data();
+  const removedQueue = docData.queue.filter(queueItem => queueItem.name !== userName);
+  if (removedQueue.length === docData.length) {
+    return {
+      message: ", nawet cie nie ma w kolejce DansGame",
+      queue: docData.queue,
+    };
+  } else {
+    return {
+      message: ", usunięto z kolejki NotLikeThis",
+      queue: removedQueue,
+    };
+  }
+}
+
 export const addToPlayQueue = async (userName) => {
   const data = await queueRef.doc("playQueue").get();
   const docData = data.data();
   const alreadyIn = docData.queue.find(queueItem => queueItem.name === userName);
-  if(alreadyIn) {
-    return{
-      message: `${Math.floor(Math.random()*500)} razy sie zapisz od razu NotLikeThis`,
+  if (alreadyIn) {
+    return {
+      message: `${Math.floor(Math.random() * 500)} razy sie zapisz od razu NotLikeThis`,
       queue: docData.queue,
     };
   } else {
-  const userQueue = {
-    name: userName,
-    costume: Math.floor(Math.random()*100),
-  };
-  if (data.data().queue?.length <= 15) {
-    if (docData.queue) {
-      await queueRef
-        .doc("playQueue")
-        .set({
-          ...docData,
-          queueBackup: [...docData.queueBackup, userQueue].slice(Math.max(docData.queueBackup.length - 10, 0)),
-          queue: [...docData.queue, userQueue],
-        });
-    } else {
-      await queueRef.doc("playQueue").set({...docData, queue: [userQueue]});
-    }
-    return {
-      message: `krissd1BRUH , jesteś ${docData.queue.length + 1} w kolejce`,
-      queue: [...docData.queue, userQueue],
+    const userQueue = {
+      name: userName,
+      costume: Math.floor(Math.random() * 100),
     };
-  } else {
-    return {
-      messsage: 'Kolejka jest full Sadge',
-      queue: ['full'],
+    if (data.data().queue?.length <= 15) {
+      if (docData.queue) {
+        await queueRef
+          .doc("playQueue")
+          .set({
+            ...docData,
+            queueBackup: [...docData.queueBackup, userQueue].slice(Math.max(docData.queueBackup.length - 10, 0)),
+            queue: [...docData.queue, userQueue],
+          });
+      } else {
+        await queueRef.doc("playQueue").set({
+          ...docData, queue: [{
+            ...userQueue,
+            startPlaying: Date.now().toString(),
+          }],
+        });
+      }
+      return {
+        message: `krissd1BRUH , jesteś ${docData.queue.length + 1} w kolejce`,
+        queue: [...docData.queue, userQueue],
+      };
+    } else {
+      return {
+        messsage: 'Kolejka jest full Sadge',
+        queue: ['full'],
+      }
     }
-  }
   }
 }
 
@@ -137,10 +159,11 @@ export const clearPlayQueue = async () => {
   await queueRef.doc("playQueue").set({...docData, queue: []});
 }
 
-export const nextPlayQueue = async () => {
+export const nextPlayQueue = async (isQueueActive) => {
   const data = await queueRef.doc("playQueue").get();
   const docData = data.data();
   const [player, ...queue] = docData.queue;
+  if (queue?.[0]) queue[0].startPlaying = Date.now().toString();
   await queueRef
     .doc("playQueue")
     .set({
@@ -148,10 +171,17 @@ export const nextPlayQueue = async () => {
       queueBackup: [...docData.queueBackup, player],
       queue: queue,
     });
-  return {
-    message: `Teraz gra ${player.name}`,
-    queue: queue
-  };
+  if (queue?.[1]) {
+    return {
+      message: `Teraz gra ${queue?.[1].name}`,
+      queue: queue,
+    };
+  } else {
+    return {
+      message: isQueueActive ? "nikt teraz nie gra, !gram" : "kolejka zamknięta, try next time",
+      queue: queue,
+    };
+  }
 }
 
 export const getPlayQueue = async () => {
